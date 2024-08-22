@@ -309,6 +309,43 @@ temp <- temp %>%
   mutate(TERMED= ifelse(TERMED==1,"Yes","No"))
 temp2 <- temp2 %>% mutate(TERMED= ifelse(TERMED==1,"Yes","No"))
 
+#update:8/21
+# replace all NA values to "Missing" of column age, gender, minority
+temp <- temp %>% mutate(AGE_GROUP= ifelse(is.na(AGE_GROUP),'Missing',as.character(AGE_GROUP)),
+                        AGE_GROUP= factor(AGE_GROUP, levels=c('Age [0-18]','Age [19-30]','Age [31-40]','Age [41-50]','Age [51-60]','Age [>60]','Missing')),
+                        GENDER= ifelse(is.na(GENDER),'Missing',as.character(GENDER)),
+                        GENDER= factor(GENDER, levels= c('M','F','Missing')),
+                        RACE_MINORITY_CAT=ifelse(is.na(RACE_MINORITY_CAT),'Missing',as.character(RACE_MINORITY_CAT)),
+                        RACE_MINORITY_CAT= factor(RACE_MINORITY_CAT, levels= c('Minority','Non-Minority','Missing')))
+# add age, gender, minority columns to this table 'MbrCohortLevelSummary_tbl_combined'
+MbrCohortLevelSummary_tbl_combined <- MbrCohortLevelSummary_tbl_combined %>% 
+  left_join(MBR_MASTER_STATIC %>% select(MBR_ID,AGE_GROUP,GENDER,RACE_MINORITY_CAT), join_by(MEMBERID == MBR_ID), copy = TRUE)
+
+MbrCohortLevelSummary_tbl_combined <- MbrCohortLevelSummary_tbl_combined %>% 
+  mutate(Cohort= as.factor(Cohort),
+         TERMED= as.factor(TERMED),
+         AGE_GROUP= ifelse(is.na(AGE_GROUP),'Missing',as.character(AGE_GROUP)),
+         AGE_GROUP= factor(AGE_GROUP, levels=c('Age [0-18]','Age [19-30]','Age [31-40]','Age [41-50]','Age [51-60]','Age [>60]','Missing')),
+         GENDER= ifelse(is.na(GENDER),'Missing',as.character(GENDER)),
+         GENDER= factor(GENDER, levels= c('M','F','Missing')),
+         RACE_MINORITY_CAT=ifelse(is.na(RACE_MINORITY_CAT),'Missing',as.character(RACE_MINORITY_CAT)),
+         RACE_MINORITY_CAT= factor(RACE_MINORITY_CAT, levels= c('Minority','Non-Minority','Missing')) )
+
+
+# again add age, gender, minority columns to this table 'temp2'
+temp2 <- temp2 %>% 
+  left_join(MBR_MASTER_STATIC %>% select(MBR_ID,AGE_GROUP,GENDER,RACE_MINORITY_CAT), join_by(MEMBERID == MBR_ID), copy = TRUE)
+
+temp2 <- temp2 %>% 
+  mutate(Cohort= as.factor(Cohort),
+         TERMED= as.factor(TERMED),
+         AGE_GROUP= ifelse(is.na(AGE_GROUP),'Missing',as.character(AGE_GROUP)),
+         AGE_GROUP= factor(AGE_GROUP, levels=c('Age [0-18]','Age [19-30]','Age [31-40]','Age [41-50]','Age [51-60]','Age [>60]','Missing')),
+         GENDER= ifelse(is.na(GENDER),'Missing',as.character(GENDER)),
+         GENDER= factor(GENDER, levels= c('M','F','Missing')),
+         RACE_MINORITY_CAT=ifelse(is.na(RACE_MINORITY_CAT),'Missing',as.character(RACE_MINORITY_CAT)),
+         RACE_MINORITY_CAT= factor(RACE_MINORITY_CAT, levels= c('Minority','Non-Minority','Missing')) )
+
 
 
 # save & load -------------------------------------------------------------

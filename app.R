@@ -46,7 +46,7 @@ ui <- fluidPage(
     sidebarPanel(
       pickerInput(
         "Cohorts","Pick a cohort:",
-        choices= unique(temp$Cohort),
+        choices= levels(temp$Cohort),
         selected = 'Aortic',
         multiple = TRUE,  
         options = list('action_box'= TRUE)
@@ -55,10 +55,37 @@ ui <- fluidPage(
       pickerInput(
         "Termed","Termed Status:",
         choices= c("Yes","No","All"),
-        # choices= unique(temp$TERMED),
+        # choices= levels(temp$TERMED),
         selected = "All",
         multiple = FALSE,
         options = list('action_box'= TRUE)
+      ),
+      # add Age filter
+      pickerInput(
+        "Age_group", "Age Groups:",
+        choices = levels(temp$AGE_GROUP),
+        selected = 'Age [>60]',
+        multiple = TRUE,
+        options = list('action_box'= TRUE)
+      ),
+      
+      # add gender filter
+      pickerInput(
+        "Gender", "Gender:",
+        choices = levels(temp$GENDER), 
+        selected = 'M',
+        multiple = TRUE,
+        options = list('action_box'= TRUE)
+      ),
+      
+      # add minority filter
+      pickerInput(
+        "Minority","Minority:",
+        choices = levels(temp$RACE_MINORITY_CAT), 
+        selected = 'Non-Minority',
+        multiple = TRUE,
+        options = list('action_box'= TRUE)
+        
       ),
       # put cohort selection criteria here 
       uiOutput('criteria'),
@@ -123,14 +150,25 @@ server <- function(input,output,session){
     if (input$Termed=="All"){
       # if "All" is selected, ignore the TERMED filter
       temp %>% 
-        filter(Cohort %in% input$Cohorts) %>% 
+        filter(Cohort %in% input$Cohorts &
+               AGE_GROUP %in% input$Age_group &
+               GENDER %in% input$Gender &
+               RACE_MINORITY_CAT %in% input$Minority
+        ) %>% 
         summarise(uniqueCount= n_distinct(MEMBERID)) %>% 
         pull(uniqueCount)
+      # check if we get the NA value from input
+      
       
     } else {
       # otherwise, filter by selected TERMED values
       temp %>% 
-        filter(Cohort %in% input$Cohorts, TERMED== input$Termed) %>% 
+        filter(Cohort %in% input$Cohorts &
+                 TERMED== input$Termed &
+                 AGE_GROUP %in% input$Age_group &
+                 GENDER %in% input$Gender &
+                 RACE_MINORITY_CAT %in% input$Minority
+                 ) %>% 
         summarise(uniqueCount= n_distinct(MEMBERID)) %>% 
         pull(uniqueCount)
     }
@@ -188,9 +226,18 @@ server <- function(input,output,session){
   # reactive expression of showing table accordingly based on cohort picked
   CPT_DX_table4Cohort_filtered <- reactive({
     if(input$Termed=="All"){
-      MbrCohortLevelSummary_tbl_combined %>% filter(Cohort %in% input$Cohorts)
+      MbrCohortLevelSummary_tbl_combined %>% 
+        filter(Cohort %in% input$Cohorts &
+               AGE_GROUP %in% input$Age_group &
+               GENDER %in% input$Gender &
+               RACE_MINORITY_CAT %in% input$Minority)
     } else {
-      MbrCohortLevelSummary_tbl_combined %>% filter(Cohort %in% input$Cohorts, TERMED== input$Termed)
+      MbrCohortLevelSummary_tbl_combined %>% 
+        filter(Cohort %in% input$Cohorts & 
+               AGE_GROUP %in% input$Age_group &
+               GENDER %in% input$Gender &
+               RACE_MINORITY_CAT %in% input$Minority &
+               TERMED== input$Termed)
       
     }
     
@@ -217,10 +264,17 @@ server <- function(input,output,session){
   characteristic_filtered <- reactive({
     if(input$Termed=="All"){
       temp %>%
-        filter(Cohort %in% input$Cohorts) 
+        filter(Cohort %in% input$Cohorts &
+                 AGE_GROUP %in% input$Age_group &
+                 GENDER %in% input$Gender &
+                 RACE_MINORITY_CAT %in% input$Minority) 
     } else {
       temp %>%
-        filter(Cohort %in% input$Cohorts,TERMED== input$Termed) 
+        filter(Cohort %in% input$Cohorts &
+               TERMED== input$Termed &
+                 AGE_GROUP %in% input$Age_group &
+                 GENDER %in% input$Gender &
+                 RACE_MINORITY_CAT %in% input$Minority) 
     }
 
 
@@ -263,9 +317,18 @@ server <- function(input,output,session){
   # reactive expression of showing cost table accordingly based on cohort picked
   Cost_table4Cohort_filtered <- reactive({
     if(input$Termed == "All") {
-      temp2 %>% filter(Cohort %in% input$Cohorts)
+      temp2 %>% 
+        filter(Cohort %in% input$Cohorts &
+                 AGE_GROUP %in% input$Age_group &
+                 GENDER %in% input$Gender &
+                 RACE_MINORITY_CAT %in% input$Minority)
     } else {
-      temp2 %>% filter(Cohort %in% input$Cohorts,TERMED== input$Termed)
+      temp2 %>% 
+        filter(Cohort %in% input$Cohorts &
+               TERMED== input$Termed &
+                 AGE_GROUP %in% input$Age_group &
+                 GENDER %in% input$Gender &
+                 RACE_MINORITY_CAT %in% input$Minority)
     }
     
   })
